@@ -1,0 +1,18 @@
+Package: agcounts
+Title: Processes 'Accelerometry' Data to 'Actigraph' Activity Counts ('AC')
+Version: 0.0.0.9000
+Authors@R: 
+    person("John", "Muschelli", , "muschellij2@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-6469-1750"))
+Description: Processes 'accelerometry' data from raw X, Y, and Z acceleration
+  values (in gravity units)  to 'Actigraph' activity counts.  See
+  <https://github.com/actigraph/agcounts> for more information of the method
+  behind the processing.
+License: GPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+Imports: 
+    lubridate,
+    magrittr,
+    reticulate
