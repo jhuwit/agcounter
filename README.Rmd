@@ -34,5 +34,8 @@ This is a basic example which shows you how to solve a common problem:
 
 ```{r example}
 library(agcounts)
+
+raw_files = c("raw_10_30.csv", "raw_10_40.csv", 
+              "raw_30_30.csv", "raw_30_40.csv")
 ## basic example code
 ```

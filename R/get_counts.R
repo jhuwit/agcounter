@@ -1,17 +1,20 @@
 
 get_time_col = function(df) {
   colvec = c("time", "HEADER_TIME_STAMP", "HEADER_TIMESTAMP")
-  stopifnot(
-    any(colvec %in% colnames(df))
-  )
+  # stopifnot(
+  #   any(colvec %in% colnames(df))
+  # )
   res = intersect(colvec, colnames(df))
-  if (length(res) != 1) {
-    stop("Time column not distinct! failing")
+  if (length(res) == 0) {
+    res = NULL
   }
   res
 }
 get_time = function(df) {
   timecol = get_time_col(df)
+  if (length(timecol) != 1) {
+    stop("Time column not distinct or not found! failing")
+  }
   time = df[[timecol]]
   stopifnot(!is.null(time))
   time
@@ -77,6 +80,24 @@ rms = function(x, y, z) {
 #' @export
 #'
 #' @examples
+#' x = download_actgraph_test_data()
+#' epoch = 10
+#' sample_rate = 30
+#' search_string = paste0("raw_", epoch, "_", sample_rate)
+#' testfile = x$ActiLifeCounts
+#' testfile = testfile[grepl(search_string, testfile)]
+#' file = x$raw
+#' file = file[grepl(search_string, file)]
+#' if (requireNamespace("readr", quietly = TRUE)) {
+#'    df = readr::read_csv(file, col_names = FALSE)
+#'    colnames(df) = c("Y", "X", "Z")
+#'    df = df[, c("X", "Y", "Z")]
+#'    # title_epoch_frequency
+#'    out = get_counts(df, sample_rate = sample_rate, epoch = epoch)
+#'    out$AGCOUNT = NULL
+#'    check = readr::read_csv(testfile, skip = 10)
+#'    stopifnot(all(check == out))
+#' }
 get_counts = function(
   df,
   epoch_in_seconds = 1L,
@@ -95,7 +116,9 @@ get_counts = function(
   }
   epoch_in_seconds = as.integer(epoch_in_seconds)
   timecol = get_time_col(df)
-  time = get_time(df)
+  if (!is.null(timecol)) {
+    time = get_time(df)
+  }
   xyz = c("X", "Y", "Z")
   cn = colnames(df)
   if (all(tolower(xyz) %in% cn) && !all(xyz %in% cn)) {
@@ -108,12 +131,14 @@ get_counts = function(
                          freq = sample_rate)
   colnames(result) = xyz
   result = as.data.frame(result)
-  time = unique(lubridate::floor_date(
-    time,
-    unit = paste0(epoch_in_seconds, " seconds")))
-  stopifnot(length(time) == nrow(result))
-  result = cbind(time, result)
-  colnames(result) = c(timecol, xyz)
+  if (!is.null(timecol)) {
+    time = unique(lubridate::floor_date(
+      time,
+      unit = paste0(epoch_in_seconds, " seconds")))
+    stopifnot(length(time) == nrow(result))
+    result = cbind(time, result)
+    colnames(result) = c(timecol, xyz)
+  }
   result$AGCOUNT = rms(result$X, result$Y, result$Z)
   result
 }

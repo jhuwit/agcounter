@@ -16,3 +16,7 @@ Imports:
     lubridate,
     magrittr,
     reticulate
+Suggests: 
+    testthat (>= 3.0.0),
+    readr
+Config/testthat/edition: 3
