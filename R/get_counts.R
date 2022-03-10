@@ -52,6 +52,26 @@ rms = function(x, y, z) {
   sqrt(x^2 + y^2 + z^2)
 }
 
+
+
+check_sample_rate = function(sample_rate, df) {
+  sample_rate = get_sample_rate(df, sample_rate)
+  sample_rate = as.integer(sample_rate)
+  accepted_frequencies = c(30, 40, 50, 60, 70, 80, 90, 100)
+  if (!sample_rate %in% accepted_frequencies) {
+    warning("sample_rate does not seem to be in the accepted sample_rates!")
+  }
+  sample_rate
+}
+
+check_epoch = function(epoch_in_seconds) {
+  if (!is.wholenumber(epoch_in_seconds)) {
+    stop("epoch in seconds is not a whole number!")
+  }
+  epoch_in_seconds = as.integer(epoch_in_seconds)
+  epoch_in_seconds
+}
+
 # Parameters
 # ----------
 #   raw : ndarray, shape (n_samples, 3)
@@ -76,7 +96,7 @@ rms = function(x, y, z) {
 #' it will try to be guessed from `df`
 #' @param fast Should the fast implementation be used?  You may want to set
 #' this as `FALSE` if your data is *very* big
-#' @param verbos print diagnostic messages
+#' @param verbose print diagnostic messages
 #'
 #' @return A `data.frame` of each axis count and the RMS of them
 #' in the `AGCOUNT` column with a time column
@@ -96,7 +116,7 @@ rms = function(x, y, z) {
 #'    colnames(df) = c("Y", "X", "Z")
 #'    df = df[, c("X", "Y", "Z")]
 #'    # title_epoch_frequency
-#'    out = get_counts(df, sample_rate = sample_rate, epoch = epoch)
+#'    out = get_counts(df, sample_rate = sample_rate, epoch = epoch, verbose = 2)
 #'    out$AGCOUNT = NULL
 #'    check = readr::read_csv(testfile, skip = 10)
 #'    stopifnot(all(check == out))
@@ -108,19 +128,13 @@ get_counts = function(
   fast = TRUE,
   verbose = TRUE
 ) {
-  sample_rate = get_sample_rate(df, sample_rate)
   f = get_ag_functions()
   py_get_counts = f$get_counts
   rm(f)
-  sample_rate = as.integer(sample_rate)
-  accepted_frequencies = c(30, 40, 50, 60, 70, 80, 90, 100)
-  if (!sample_rate %in% accepted_frequencies) {
-    warning("sample_rate does not seem to be in the accepted sample_rates!")
-  }
-  if (!is.wholenumber(epoch_in_seconds)) {
-    stop("epoch in seconds is not a whole number!")
-  }
-  epoch_in_seconds = as.integer(epoch_in_seconds)
+
+  sample_rate = check_sample_rate(sample_rate, df)
+  epoch_in_seconds = check_epoch(epoch_in_seconds)
+
   timecol = get_time_col(df)
   if (!is.null(timecol)) {
     time = get_time(df)
@@ -150,4 +164,62 @@ get_counts = function(
   }
   result$AGCOUNT = rms(result$X, result$Y, result$Z)
   result
+}
+
+
+#' @export
+#' @rdname get_counts
+get_counts_slow = function(
+  df,
+  epoch_in_seconds = 1L,
+  sample_rate = NULL,
+  verbose = TRUE
+) {
+  f = get_ag_functions()
+  extract_slow = f$`_extract_slow`
+  rm(f)
+
+  sample_rate = check_sample_rate(sample_rate, df)
+  epoch_in_seconds = check_epoch(epoch_in_seconds)
+
+  timecol = get_time_col(df)
+  if (!is.null(timecol)) {
+    time = get_time(df)
+    time = unique(lubridate::floor_date(
+      time,
+      unit = paste0(epoch_in_seconds, " seconds")))
+  }
+  xyz = c("X", "Y", "Z")
+  cn = colnames(df)
+  if (all(tolower(xyz) %in% cn) && !all(xyz %in% cn)) {
+    xyz = tolower(xyz)
+  }
+  df = df[,xyz, drop = FALSE]
+  df = as.matrix(df)
+  result = NULL
+  for (i in xyz) {
+    if (verbose > 0) {
+      message("Running ", i)
+    }
+    raw_data = df[, i, drop = FALSE]
+    df = df[, setdiff(colnames(df), i), drop = FALSE]
+    raw_data = as.integer(extract_slow(
+      raw_data,
+      frequency = sample_rate,
+      epoch = epoch_in_seconds,
+      lfe_select = FALSE,
+      verbose = as.integer(verbose > 1)))
+    result = rbind(result, raw_data)
+  }
+  rm(df)
+  result = t(result)
+  colnames(result) = xyz
+  if (!is.null(timecol)) {
+    stopifnot(length(time) == nrow(result))
+    result = cbind(time, result)
+    colnames(result) = c(timecol, xyz)
+  }
+  result = as.data.frame(result)
+  result$AGCOUNT = rms(result$X, result$Y, result$Z)
+  return(result)
 }

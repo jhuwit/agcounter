@@ -35,7 +35,10 @@ testthat::test_that("multiplication works", {
   }
   check_it = function(epoch, sample_rate, raw_file, ag_file) {
     df = read_raw(raw_file)
+    out_slow = get_counts_slow(df, sample_rate = sample_rate, epoch = epoch)
     out = get_counts(df, sample_rate = sample_rate, epoch = epoch)
+    testthat::expect_equal(out, out_slow)
+    out_slow$AGCOUNT = NULL
     out$AGCOUNT = NULL
     colnames(out) =c("Axis1", "Axis2", "Axis3")
     check = readr::read_csv(ag_file, skip = 10)

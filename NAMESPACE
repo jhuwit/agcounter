@@ -3,4 +3,5 @@
 export("%>%")
 export(download_actgraph_test_data)
 export(get_counts)
+export(get_counts_slow)
 importFrom(magrittr,"%>%")
