@@ -39,6 +39,18 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      - name: Install python dependencies
+        run: |
+          check = file.exists("requirements.txt")
+          if (!requireNamespace("reticulate") & check) remotes::install_cran("reticulate")
+          if (check) reticulate::install_miniconda()
+          if (check) x = readLines("requirements.txt")
+          if (check) try(reticulate::py_install(x, method = "conda", channel = c("conda-forge", "defaults", "bioconda")))
+          if (check) try(reticulate::py_install(x, method = "conda", pip = TRUE))
+          if (check) try(reticulate::py_install(x, method = "conda", channel = c("conda-forge", "defaults", "bioconda")))
+        continue-on-error: true
+        shell: Rscript {0}
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
