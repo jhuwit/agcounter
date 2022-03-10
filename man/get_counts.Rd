@@ -3,7 +3,6 @@
 \name{download_actgraph_test_data}
 \alias{download_actgraph_test_data}
 \alias{get_counts}
-\alias{get_counts_slow}
 \title{Get Actigraph Counts}
 \usage{
 download_actgraph_test_data()
@@ -13,10 +12,9 @@ get_counts(
   epoch_in_seconds = 1L,
   sample_rate = NULL,
   fast = TRUE,
+  save_memory = FALSE,
   verbose = TRUE
 )
-
-get_counts_slow(df, epoch_in_seconds = 1L, sample_rate = NULL, verbose = TRUE)
 }
 \arguments{
 \item{df}{A \code{data.frame} with columns \code{X}, \code{Y}, \code{Z}, and
@@ -29,6 +27,8 @@ it will try to be guessed from \code{df}}
 
 \item{fast}{Should the fast implementation be used?  You may want to set
 this as \code{FALSE} if your data is \emph{very} big}
+
+\item{save_memory}{Should each column be run separately?}
 
 \item{verbose}{print diagnostic messages}
 }
@@ -53,6 +53,8 @@ if (requireNamespace("readr", quietly = TRUE)) {
    colnames(df) = c("Y", "X", "Z")
    df = df[, c("X", "Y", "Z")]
    # title_epoch_frequency
+   out_mem = get_counts(df, sample_rate = sample_rate,
+   save_memory = TRUE, epoch = epoch, verbose = 2)
    out = get_counts(df, sample_rate = sample_rate, epoch = epoch, verbose = 2)
    out$AGCOUNT = NULL
    check = readr::read_csv(testfile, skip = 10)

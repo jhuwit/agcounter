@@ -97,6 +97,7 @@ check_epoch = function(epoch_in_seconds) {
 #' @param fast Should the fast implementation be used?  You may want to set
 #' this as `FALSE` if your data is *very* big
 #' @param verbose print diagnostic messages
+#' @param save_memory Should each column be run separately?
 #'
 #' @return A `data.frame` of each axis count and the RMS of them
 #' in the `AGCOUNT` column with a time column
@@ -116,6 +117,8 @@ check_epoch = function(epoch_in_seconds) {
 #'    colnames(df) = c("Y", "X", "Z")
 #'    df = df[, c("X", "Y", "Z")]
 #'    # title_epoch_frequency
+#'    out_mem = get_counts(df, sample_rate = sample_rate,
+#'    save_memory = TRUE, epoch = epoch, verbose = 2)
 #'    out = get_counts(df, sample_rate = sample_rate, epoch = epoch, verbose = 2)
 #'    out$AGCOUNT = NULL
 #'    check = readr::read_csv(testfile, skip = 10)
@@ -126,6 +129,7 @@ get_counts = function(
   epoch_in_seconds = 1L,
   sample_rate = NULL,
   fast = TRUE,
+  save_memory = FALSE,
   verbose = TRUE
 ) {
   f = get_ag_functions()
@@ -150,11 +154,29 @@ get_counts = function(
   df = df[,xyz, drop = FALSE]
   df = as.matrix(df)
   fast = as.logical(fast)
-  result = py_get_counts(raw = df,
-                         epoch = epoch_in_seconds,
-                         freq = sample_rate,
-                         fast = fast,
-                         verbose = as.integer(verbose))
+  if (save_memory) {
+    result = NULL
+    for (i in xyz) {
+      if (verbose > 0) {
+        message("Running ", i)
+      }
+      raw_data = df[, i, drop = FALSE]
+      df = df[, setdiff(colnames(df), i), drop = FALSE]
+      raw_data = py_get_counts(raw = raw_data,
+                               epoch = epoch_in_seconds,
+                               freq = sample_rate,
+                               fast = fast,
+                               verbose = as.integer(verbose))
+      result = cbind(result, raw_data)
+      rm(raw_data)
+    }
+  } else {
+    result = py_get_counts(raw = df,
+                           epoch = epoch_in_seconds,
+                           freq = sample_rate,
+                           fast = fast,
+                           verbose = as.integer(verbose))
+  }
   colnames(result) = xyz
   result = as.data.frame(result)
   if (!is.null(timecol)) {
@@ -166,60 +188,3 @@ get_counts = function(
   result
 }
 
-
-#' @export
-#' @rdname get_counts
-get_counts_slow = function(
-  df,
-  epoch_in_seconds = 1L,
-  sample_rate = NULL,
-  verbose = TRUE
-) {
-  f = get_ag_functions()
-  extract_slow = f$`_extract_slow`
-  rm(f)
-
-  sample_rate = check_sample_rate(sample_rate, df)
-  epoch_in_seconds = check_epoch(epoch_in_seconds)
-
-  timecol = get_time_col(df)
-  if (!is.null(timecol)) {
-    time = get_time(df)
-    time = unique(lubridate::floor_date(
-      time,
-      unit = paste0(epoch_in_seconds, " seconds")))
-  }
-  xyz = c("X", "Y", "Z")
-  cn = colnames(df)
-  if (all(tolower(xyz) %in% cn) && !all(xyz %in% cn)) {
-    xyz = tolower(xyz)
-  }
-  df = df[,xyz, drop = FALSE]
-  df = as.matrix(df)
-  result = NULL
-  for (i in xyz) {
-    if (verbose > 0) {
-      message("Running ", i)
-    }
-    raw_data = df[, i, drop = FALSE]
-    df = df[, setdiff(colnames(df), i), drop = FALSE]
-    raw_data = as.integer(extract_slow(
-      raw_data,
-      frequency = sample_rate,
-      epoch = epoch_in_seconds,
-      lfe_select = FALSE,
-      verbose = as.integer(verbose > 1)))
-    result = rbind(result, raw_data)
-  }
-  rm(df)
-  result = t(result)
-  colnames(result) = xyz
-  if (!is.null(timecol)) {
-    stopifnot(length(time) == nrow(result))
-    result = cbind(time, result)
-    colnames(result) = c(timecol, xyz)
-  }
-  result = as.data.frame(result)
-  result$AGCOUNT = rms(result$X, result$Y, result$Z)
-  return(result)
-}
