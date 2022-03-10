@@ -76,6 +76,7 @@ rms = function(x, y, z) {
 #' it will try to be guessed from `df`
 #' @param fast Should the fast implementation be used?  You may want to set
 #' this as `FALSE` if your data is *very* big
+#' @param verbos print diagnostic messages
 #'
 #' @return A `data.frame` of each axis count and the RMS of them
 #' in the `AGCOUNT` column with a time column
@@ -104,7 +105,8 @@ get_counts = function(
   df,
   epoch_in_seconds = 1L,
   sample_rate = NULL,
-  fast = TRUE
+  fast = TRUE,
+  verbose = TRUE
 ) {
   sample_rate = get_sample_rate(df, sample_rate)
   f = get_ag_functions()
@@ -137,7 +139,8 @@ get_counts = function(
   result = py_get_counts(raw = df,
                          epoch = epoch_in_seconds,
                          freq = sample_rate,
-                         fast = fast)
+                         fast = fast,
+                         verbose = as.integer(verbose))
   colnames(result) = xyz
   result = as.data.frame(result)
   if (!is.null(timecol)) {

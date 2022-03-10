@@ -7,7 +7,13 @@
 \usage{
 download_actgraph_test_data()
 
-get_counts(df, epoch_in_seconds = 1L, sample_rate = NULL, fast = TRUE)
+get_counts(
+  df,
+  epoch_in_seconds = 1L,
+  sample_rate = NULL,
+  fast = TRUE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{df}{A \code{data.frame} with columns \code{X}, \code{Y}, \code{Z}, and
@@ -20,6 +26,8 @@ it will try to be guessed from \code{df}}
 
 \item{fast}{Should the fast implementation be used?  You may want to set
 this as \code{FALSE} if your data is \emph{very} big}
+
+\item{verbos}{print diagnostic messages}
 }
 \value{
 A \code{data.frame} of each axis count and the RMS of them
