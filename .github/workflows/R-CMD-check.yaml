@@ -42,6 +42,7 @@ jobs:
       - name: Install python dependencies
         run: |
           check = file.exists("requirements.txt")
+          if (!requireNamespace("remotes") & check) install.packages("remotes")
           if (!requireNamespace("reticulate") & check) remotes::install_cran("reticulate")
           if (check) reticulate::install_miniconda()
           if (check) x = readLines("requirements.txt")
