@@ -7,7 +7,7 @@
 \usage{
 download_actgraph_test_data()
 
-get_counts(df, epoch_in_seconds = 1L, sample_rate = NULL)
+get_counts(df, epoch_in_seconds = 1L, sample_rate = NULL, fast = TRUE)
 }
 \arguments{
 \item{df}{A \code{data.frame} with columns \code{X}, \code{Y}, \code{Z}, and
@@ -17,6 +17,9 @@ a time column either \code{time}, \code{HEADER_TIME_STAMP}, or \code{HEADER_TIME
 
 \item{sample_rate}{The sampling rate for the data.  If \code{NULL}, then
 it will try to be guessed from \code{df}}
+
+\item{fast}{Should the fast implementation be used?  You may want to set
+this as \code{FALSE} if your data is \emph{very} big}
 }
 \value{
 A \code{data.frame} of each axis count and the RMS of them

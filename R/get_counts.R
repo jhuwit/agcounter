@@ -74,6 +74,8 @@ rms = function(x, y, z) {
 #' @param epoch_in_seconds epoch to calculate the counts for, in seconds
 #' @param sample_rate The sampling rate for the data.  If `NULL`, then
 #' it will try to be guessed from `df`
+#' @param fast Should the fast implementation be used?  You may want to set
+#' this as `FALSE` if your data is *very* big
 #'
 #' @return A `data.frame` of each axis count and the RMS of them
 #' in the `AGCOUNT` column with a time column
@@ -101,11 +103,13 @@ rms = function(x, y, z) {
 get_counts = function(
   df,
   epoch_in_seconds = 1L,
-  sample_rate = NULL
+  sample_rate = NULL,
+  fast = TRUE
 ) {
   sample_rate = get_sample_rate(df, sample_rate)
   f = get_ag_functions()
   py_get_counts = f$get_counts
+  rm(f)
   sample_rate = as.integer(sample_rate)
   accepted_frequencies = c(30, 40, 50, 60, 70, 80, 90, 100)
   if (!sample_rate %in% accepted_frequencies) {
@@ -118,6 +122,9 @@ get_counts = function(
   timecol = get_time_col(df)
   if (!is.null(timecol)) {
     time = get_time(df)
+    time = unique(lubridate::floor_date(
+      time,
+      unit = paste0(epoch_in_seconds, " seconds")))
   }
   xyz = c("X", "Y", "Z")
   cn = colnames(df)
@@ -126,15 +133,14 @@ get_counts = function(
   }
   df = df[,xyz, drop = FALSE]
   df = as.matrix(df)
+  fast = as.logical(fast)
   result = py_get_counts(raw = df,
                          epoch = epoch_in_seconds,
-                         freq = sample_rate)
+                         freq = sample_rate,
+                         fast = fast)
   colnames(result) = xyz
   result = as.data.frame(result)
   if (!is.null(timecol)) {
-    time = unique(lubridate::floor_date(
-      time,
-      unit = paste0(epoch_in_seconds, " seconds")))
     stopifnot(length(time) == nrow(result))
     result = cbind(time, result)
     colnames(result) = c(timecol, xyz)

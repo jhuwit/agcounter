@@ -357,17 +357,24 @@ def get_counts(raw, freq: int, epoch: int, fast: bool = True):
         x_raw = raw[0 : len(raw), [0]]
         y_raw = raw[0 : len(raw), [1]]
         z_raw = raw[0 : len(raw), [2]]
+        raw = []
         epoch_counts_x = _extract_slow(x_raw, freq, False, epoch)
         epoch_counts_y = _extract_slow(y_raw, freq, False, epoch)
         epoch_counts_z = _extract_slow(z_raw, freq, False, epoch)
 
         # formatting matrix for output
         x_counts_transposed = np.transpose(epoch_counts_x)
+        epoch_counts_x = []
         y_counts_transposed = np.transpose(epoch_counts_y)
+        epoch_counts_y = []
         z_counts_transposed = np.transpose(epoch_counts_z)
+        epoch_counts_z = []
 
         counts = np.concatenate(
             (x_counts_transposed, y_counts_transposed, z_counts_transposed), 1
         )
+        x_counts_transposed = []
+        y_counts_transposed = []
+        z_counts_transposed = []
 
     return counts.astype(int)
