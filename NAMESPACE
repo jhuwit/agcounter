@@ -2,5 +2,7 @@
 
 export("%>%")
 export(download_actgraph_test_data)
+export(extract_counts)
 export(get_counts)
+export(get_counts_py)
 importFrom(magrittr,"%>%")

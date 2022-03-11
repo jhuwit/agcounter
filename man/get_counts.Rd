@@ -2,12 +2,14 @@
 % Please edit documentation in R/download_test_data.R, R/get_counts.R
 \name{download_actgraph_test_data}
 \alias{download_actgraph_test_data}
+\alias{get_counts_py}
 \alias{get_counts}
+\alias{extract_counts}
 \title{Get Actigraph Counts}
 \usage{
 download_actgraph_test_data()
 
-get_counts(
+get_counts_py(
   df,
   epoch_in_seconds = 1L,
   sample_rate = NULL,
@@ -15,6 +17,16 @@ get_counts(
   save_memory = FALSE,
   verbose = TRUE
 )
+
+get_counts(
+  df,
+  epoch_in_seconds = 1L,
+  sample_rate = NULL,
+  save_memory = FALSE,
+  verbose = TRUE
+)
+
+extract_counts(raw, epoch_in_seconds = 1L, sample_rate = NULL, verbose = TRUE)
 }
 \arguments{
 \item{df}{A \code{data.frame} with columns \code{X}, \code{Y}, \code{Z}, and
@@ -31,6 +43,8 @@ this as \code{FALSE} if your data is \emph{very} big}
 \item{save_memory}{Should each column be run separately?}
 
 \item{verbose}{print diagnostic messages}
+
+\item{raw}{a raw matrix of numeric values}
 }
 \value{
 A \code{data.frame} of each axis count and the RMS of them

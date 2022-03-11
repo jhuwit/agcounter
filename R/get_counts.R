@@ -124,7 +124,8 @@ check_epoch = function(epoch_in_seconds) {
 #'    check = readr::read_csv(testfile, skip = 10)
 #'    stopifnot(all(check == out))
 #' }
-get_counts = function(
+#' @rdname get_counts
+get_counts_py = function(
   df,
   epoch_in_seconds = 1L,
   sample_rate = NULL,
@@ -189,7 +190,9 @@ get_counts = function(
 }
 
 
-resample_data = function(
+#' @rdname get_counts
+#' @export
+get_counts = function(
   df,
   epoch_in_seconds = 1L,
   sample_rate = NULL,
@@ -197,8 +200,6 @@ resample_data = function(
   verbose = TRUE
 ) {
   f = get_ag_functions()
-  resample_func = f$`_resample`
-  rm(f)
 
   sample_rate = check_sample_rate(sample_rate, df)
   epoch_in_seconds = check_epoch(epoch_in_seconds)
@@ -217,6 +218,7 @@ resample_data = function(
   }
   df = df[,xyz, drop = FALSE]
   df = as.matrix(df)
+  fast = as.logical(fast)
   if (save_memory) {
     result = NULL
     for (i in xyz) {
@@ -225,20 +227,19 @@ resample_data = function(
       }
       raw_data = df[, i, drop = FALSE]
       df = df[, setdiff(colnames(df), i), drop = FALSE]
-      raw_data = resample_func(raw = raw_data,
-                               epoch_seconds = epoch_in_seconds,
-                               frequency = sample_rate,
-                               verbose = as.integer(verbose))
+      raw_data = extract_counts(raw = raw_data,
+                                epoch_in_seconds = epoch_in_seconds,
+                                sample_rate = sample_rate,
+                                verbose = as.integer(verbose))
       result = cbind(result, raw_data)
       rm(raw_data)
     }
   } else {
-    result = resample_func(raw = df,
-                           epoch_seconds = epoch_in_seconds,
-                           frequency = sample_rate,
-                           verbose = as.integer(verbose))
+    result = extract_counts(raw = df,
+                            epoch_in_seconds = epoch_in_seconds,
+                            sample_rate = sample_rate,
+                            verbose = as.integer(verbose))
   }
-
   colnames(result) = xyz
   result = as.data.frame(result)
   if (!is.null(timecol)) {
@@ -250,3 +251,49 @@ resample_data = function(
   result
 }
 
+#' @rdname get_counts
+#' @export
+#' @param raw a raw matrix of numeric values
+extract_counts = function(
+  raw,
+  epoch_in_seconds = 1L,
+  sample_rate = NULL,
+  verbose = TRUE
+) {
+  f = get_ag_functions()
+  epoch_in_seconds = as.integer(epoch_in_seconds)
+  verbose = as.integer(verbose)
+
+  if (verbose > 0) {
+    message("Resampling Data")
+  }
+  raw = f$`_resample`(raw = raw,
+                      frequency = sample_rate,
+                      epoch_seconds = epoch_in_seconds,
+                      verbose = verbose > 1)
+  gc()
+  if (verbose > 0) {
+    message("Filtering Data")
+  }
+  raw = f$`_bpf_filter`(downsample_data = raw,
+                        verbose = verbose)
+  if (verbose > 0) {
+    message("Trimming Data")
+  }
+  raw = f$`_trim_data`(bpf_data = raw,
+                       lfe_select = FALSE,
+                       verbose = verbose > 1)
+  if (verbose > 0) {
+    message("Resampling 10Hz")
+  }
+  raw = f$`_resample_10hz`(trim_data = raw,
+                           verbose = 0)
+  if (verbose > 0) {
+    message("Getting counts")
+  }
+  raw = f$`_sum_counts`(downsample_10hz = raw,
+                        epoch_seconds = epoch_in_seconds,
+                        verbose = verbose > 1)
+  raw = t(raw)
+  raw
+}
