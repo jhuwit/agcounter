@@ -188,3 +188,65 @@ get_counts = function(
   result
 }
 
+
+resample_data = function(
+  df,
+  epoch_in_seconds = 1L,
+  sample_rate = NULL,
+  save_memory = FALSE,
+  verbose = TRUE
+) {
+  f = get_ag_functions()
+  resample_func = f$`_resample`
+  rm(f)
+
+  sample_rate = check_sample_rate(sample_rate, df)
+  epoch_in_seconds = check_epoch(epoch_in_seconds)
+
+  timecol = get_time_col(df)
+  if (!is.null(timecol)) {
+    time = get_time(df)
+    time = unique(lubridate::floor_date(
+      time,
+      unit = paste0(epoch_in_seconds, " seconds")))
+  }
+  xyz = c("X", "Y", "Z")
+  cn = colnames(df)
+  if (all(tolower(xyz) %in% cn) && !all(xyz %in% cn)) {
+    xyz = tolower(xyz)
+  }
+  df = df[,xyz, drop = FALSE]
+  df = as.matrix(df)
+  if (save_memory) {
+    result = NULL
+    for (i in xyz) {
+      if (verbose > 0) {
+        message("Running ", i)
+      }
+      raw_data = df[, i, drop = FALSE]
+      df = df[, setdiff(colnames(df), i), drop = FALSE]
+      raw_data = resample_func(raw = raw_data,
+                               epoch_seconds = epoch_in_seconds,
+                               frequency = sample_rate,
+                               verbose = as.integer(verbose))
+      result = cbind(result, raw_data)
+      rm(raw_data)
+    }
+  } else {
+    result = resample_func(raw = df,
+                           epoch_seconds = epoch_in_seconds,
+                           frequency = sample_rate,
+                           verbose = as.integer(verbose))
+  }
+
+  colnames(result) = xyz
+  result = as.data.frame(result)
+  if (!is.null(timecol)) {
+    stopifnot(length(time) == nrow(result))
+    result = cbind(time, result)
+    colnames(result) = c(timecol, xyz)
+  }
+  result$AGCOUNT = rms(result$X, result$Y, result$Z)
+  result
+}
+

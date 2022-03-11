@@ -229,11 +229,10 @@ def _extract_slow(
     down_sample10_hz = []
     return epoch_counts
 
-
-def _extract(
-    raw: npt.NDArray[np.float_], frequency: int, lfe_select: bool, epoch_seconds: int, verbose: bool
+def _resample(
+  raw: npt.NDArray[np.float_], frequency: int, epoch_seconds: int, verbose: bool
 ) -> npt.NDArray[np.float64]:
-    """Generate counts.
+    """Resample the data.
 
     Parameters
     ----------
@@ -241,17 +240,17 @@ def _extract(
         Matrix containing raw data
     frequency:
         sample frequency of raw data (Hz)
-    lfe_select:
-        False for regular trimming, True for allow more noise
     epoch_seconds:
         Used to compute how many raw samples are used for
         computing an epoch
+    verbose:
+        Print diagnostic messages
 
     Returns
     -------
-    epochs :
-        The epochs
-    """
+    resampled_data :
+        The resampled_data
+    """  
     upsample_factor, downsample_factor = _factors(frequency)
     raw = np.transpose(raw)
 
@@ -302,7 +301,25 @@ def _extract(
     if verbose:
 	   	print("Created downsample_data")
     downsample_data = np.round(downsample_data * 1000) / 1000
+    return downsample_data
 
+def _bpf_filter(
+    downsample_data: npt.NDArray[np.float_], verbose: bool
+) -> npt.NDArray[np.float64]:
+    """Run BPF Filter.
+
+    Parameters
+    ----------
+    downsample_data:
+        Matrix containing downsampled data
+    verbose:
+        Print diagnostic messages
+
+    Returns
+    -------
+    bpf_data :
+        The filtered data
+    """  
     zi = signal.lfilter_zi(INPUT_COEFFICIENTS[0, :], OUTPUT_COEFFICIENTS[0, :]).reshape(
         (1, -1)
     )
@@ -320,7 +337,27 @@ def _extract(
     bpf_data = ((3.0 / 4096.0) / (2.6 / 256.0) * 237.5) * bpf_data
     # 17.127404 is used in ActiLife and 17.128125 is used in
     # firmware.
+    return bpf_data
+    
+def _trim_data(
+    bpf_data: npt.NDArray[np.float_], lfe_select: bool, verbose: bool
+) -> npt.NDArray[np.float64]:
+    """Trim/Threshold data.
 
+    Parameters
+    ----------
+    bpf_data:
+        Matrix containing filtered data
+    lfe_select:
+        False for regular trimming, True for allow more noise        
+    verbose:
+        Print diagnostic messages
+
+    Returns
+    -------
+    trim_data :
+        The trimmed/thresholded data
+    """ 
     # then threshold/trim
     if verbose:
 	   	print("Trimming Data")    
@@ -344,15 +381,52 @@ def _extract(
         trim_data[trim_data < min_count] = 0
         trim_data[trim_data > max_count] = max_count
         trim_data = np.floor(trim_data)
-    bpf_data = []
+    return trim_data
 
+def _resample_10hz(
+  trim_data: npt.NDArray[np.float_], verbose: bool
+) -> npt.NDArray[np.float64]:
+    """Resample the data.
+
+    Parameters
+    ----------
+    trim_data:
+        Matrix containing trimmed/thresholded data
+    
+
+    Returns
+    -------
+    resampled_data :
+        The resampled_data
+    """  
     if verbose:
 	   	print("Getting data back to 10Hz for accumulation")   
     # hackish downsample to 10 Hz
     downsample_10hz = np.cumsum(trim_data, axis=-1, dtype=float)
     downsample_10hz[:, 3:] = downsample_10hz[:, 3:] - downsample_10hz[:, :-3]
     downsample_10hz = np.floor(downsample_10hz[:, 3 - 1 :: 3] / 3)
+    return downsample_10hz
 
+def _sum_counts(
+    downsample_10hz: npt.NDArray[np.float_], epoch_seconds: int, verbose: bool
+) -> npt.NDArray[np.float64]:
+    """Generate counts.
+
+    Parameters
+    ----------
+    downsample_10hz:
+        Matrix containing downsampled to 10hz data
+    epoch_seconds:
+        Used to compute how many raw samples are used for
+        computing an epoch
+    verbose:
+        Print diagnostic messages
+
+    Returns
+    -------
+    epochs :
+        The epochs
+    """
     if verbose:
 	   	print("Summing epochs")
     # Accumulator for epoch
@@ -363,6 +437,51 @@ def _extract(
         epoch_counts[:, block_size:] - epoch_counts[:, :-block_size]
     )
     epoch_counts = np.floor(epoch_counts[:, block_size - 1 :: block_size])
+    return epoch_counts
+    
+def _extract(
+    raw: npt.NDArray[np.float_], frequency: int, lfe_select: bool, epoch_seconds: int, verbose: bool
+) -> npt.NDArray[np.float64]:
+    """Generate counts.
+
+    Parameters
+    ----------
+    raw:
+        Matrix containing raw data
+    frequency:
+        sample frequency of raw data (Hz)
+    lfe_select:
+        False for regular trimming, True for allow more noise
+    epoch_seconds:
+        Used to compute how many raw samples are used for
+        computing an epoch
+    verbose:
+        Print diagnostic messages
+
+    Returns
+    -------
+    epochs :
+        The epochs
+    """
+    downsample_data = _resample(raw = raw, 
+                                frequency = frequency, 
+                                epoch_seconds = epoch_seconds,
+                                verbose = verbose)
+    raw = []
+    bpf_data = _bpf_filter(downsample_data = downsample_data,
+                           verbose = verbose)
+    downsample_data = []
+    trim_data = _trim_data(bpf_data = bpf_data,
+                           lfe_select = lfe_select,
+                           verbose = verbose)
+    bpf_data = []
+
+    downsample_10hz = _resample_10hz(trim_data = trim_data,
+                                     verbose = verbose)
+    trim_data = []
+    epoch_counts = _sum_counts(downsample_10hz = downsample_10hz,
+                               epoch_seconds = epoch_seconds,
+                               verbose = verbose)
     return epoch_counts
 
 
