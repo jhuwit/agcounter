@@ -270,8 +270,11 @@ get_counts = function(
   colnames(result) = xyz
   result = as.data.frame(result)
   if (!is.null(timecol)) {
-    stopifnot(length(time) == nrow(result))
-    result = cbind(time, result)
+    stopifnot(length(time) == nrow(result) ||
+                length(time) = (nrow(result) -1)
+              )
+
+    result = cbind(time[1:nrow(result)], result)
     colnames(result) = c(timecol, xyz)
   }
   result$AGCOUNT = rms(result$X, result$Y, result$Z)
