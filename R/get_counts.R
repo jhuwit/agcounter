@@ -218,20 +218,47 @@ get_counts = function(
   }
   df = df[,xyz, drop = FALSE]
   df = as.matrix(df)
-  fast = as.logical(fast)
   if (save_memory) {
     result = NULL
     for (i in xyz) {
       if (verbose > 0) {
         message("Running ", i)
       }
-      raw_data = df[, i, drop = FALSE]
+      raw = df[, i, drop = FALSE]
       df = df[, setdiff(colnames(df), i), drop = FALSE]
-      raw_data = extract_counts(raw = raw_data,
-                                epoch_in_seconds = epoch_in_seconds,
-                                sample_rate = sample_rate,
-                                verbose = as.integer(verbose))
-      result = cbind(result, raw_data)
+      gc()
+      if (verbose > 0) {
+        message("Resampling Data")
+      }
+      raw = f$`_resample`(raw = raw,
+                          frequency = sample_rate,
+                          epoch_seconds = epoch_in_seconds,
+                          verbose = verbose > 1)
+      gc()
+      if (verbose > 0) {
+        message("Filtering Data")
+      }
+      raw = f$`_bpf_filter`(downsample_data = raw,
+                            verbose = verbose)
+      if (verbose > 0) {
+        message("Trimming Data")
+      }
+      raw = f$`_trim_data`(bpf_data = raw,
+                           lfe_select = FALSE,
+                           verbose = verbose > 1)
+      if (verbose > 0) {
+        message("Resampling 10Hz")
+      }
+      raw = f$`_resample_10hz`(trim_data = raw,
+                               verbose = 0)
+      if (verbose > 0) {
+        message("Getting counts")
+      }
+      raw = f$`_sum_counts`(downsample_10hz = raw,
+                            epoch_seconds = epoch_in_seconds,
+                            verbose = verbose > 1)
+      raw = t(raw)
+      result = cbind(result, raw)
       rm(raw_data)
     }
   } else {
