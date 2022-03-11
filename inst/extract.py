@@ -110,7 +110,7 @@ def _extract_slow(
     l_fp = upsample_factor
 
     if verbose:
-	   	print("Upsampling data")
+	   	print("Upsampling data", flush = True)
     if frequency == 30 or frequency == 60 or frequency == 90:
         lpf_upsample_data = upsample_data
     else:
@@ -132,7 +132,7 @@ def _extract_slow(
     )
 
     if verbose:
-	   	print("Downsampling data")
+	   	print("Downsampling data", flush = True)
     if frequency == 30:
         down_sample_data = raw
     else:
@@ -149,7 +149,7 @@ def _extract_slow(
     shift_reg_out = np.zeros((1, 9))
 
     if verbose:
-	   	print("Filtering data")
+	   	print("Filtering data", flush = True)
     for _ in range(180 * 6):  # charge filter up to steady state
         shift_reg_in[[0], 1:9] = shift_reg_in[[0], 0 : (9 - 1)]
         shift_reg_in[0, 0] = down_sample_data[0, 0]
@@ -174,7 +174,7 @@ def _extract_slow(
     ) * bpf_data  # 17.127404 is used in ActiLife and 17.128125 is used in firmware.
 
     if verbose:
-	   	print("Threshold/trimming data")
+	   	print("Threshold/trimming data", flush = True)
     # then threshold/trim
     trim_data = np.zeros((1, len(bpf_data[0])))
 
@@ -204,7 +204,7 @@ def _extract_slow(
                 trim_data[0, i] = np.floor(abs(bpf_data[0, i]))  # floor
 
     if verbose:
-	   	print("Getting data back to 10Hz for accumulation")
+	   	print("Getting data back to 10Hz for accumulation", flush = True)
     bpf_data = []
     # hackish downsample to 10 Hz
     down_sample10_hz = np.zeros((1, int(len(trim_data[0]) / 3)))
@@ -221,7 +221,7 @@ def _extract_slow(
     epoch_counts = np.zeros((1, int((len(down_sample10_hz[0]) / block_size))))
 
     if verbose:
-	   	print("Summing epochs")
+	   	print("Summing epochs", flush = True)
     for i in range(len(epoch_counts[0])):
         epoch_counts[0, i] = np.floor(
             sum(down_sample10_hz[0, i * block_size : i * block_size + block_size])
@@ -298,7 +298,7 @@ def _resample(
     raw = []
     lpf_upsample_data = []
     if verbose:
-	   	print("Created downsample_data")
+	   	print("Created downsample_data", flush = True)
     downsample_data = np.round(downsample_data * 1000) / 1000
     return downsample_data
 
@@ -323,7 +323,7 @@ def _bpf_filter(
         (1, -1)
     )
     if verbose:
-	   	print("Filtering Data")
+	   	print("Filtering Data", flush = True)
     bpf_data, _ = signal.lfilter(
         INPUT_COEFFICIENTS[0, :],
         OUTPUT_COEFFICIENTS[0, :],
@@ -359,7 +359,7 @@ def _trim_data(
     """ 
     # then threshold/trim
     if verbose:
-	   	print("Trimming Data")    
+	   	print("Trimming Data", flush = True)    
     if lfe_select:
         min_count = 1
         max_count = 128 * 1
@@ -399,7 +399,7 @@ def _resample_10hz(
         The resampled_data
     """  
     if verbose:
-	   	print("Getting data back to 10Hz for accumulation")   
+	   	print("Getting data back to 10Hz for accumulation", flush = True)   
     # hackish downsample to 10 Hz
     downsample_10hz = np.cumsum(trim_data, axis=-1, dtype=float)
     downsample_10hz[:, 3:] = downsample_10hz[:, 3:] - downsample_10hz[:, :-3]
@@ -427,7 +427,7 @@ def _sum_counts(
         The epochs
     """
     if verbose:
-	   	print("Summing epochs")
+	   	print("Summing epochs", flush = True)
     # Accumulator for epoch
     block_size = epoch_seconds * 10
     epoch_counts = np.cumsum(downsample_10hz, axis=-1, dtype=float)
@@ -514,17 +514,17 @@ def get_counts(raw, freq: int, epoch: int, fast: bool = True, verbose: int = 1):
         z_raw = raw[0 : len(raw), [2]]
         raw = []
         if verbose > 0:
-          print("Running extract for x")
+          print("Running extract for x", flush = True)
         epoch_counts_x = _extract_slow(x_raw, freq, False, epoch, verbose > 1)
         if verbose > 0:
-          print("Running extract for y")      
+          print("Running extract for y", flush = True)      
         epoch_counts_y = _extract_slow(y_raw, freq, False, epoch, verbose > 1)
         if verbose > 0:
-          print("Running extract for z")              
+          print("Running extract for z", flush = True)              
         epoch_counts_z = _extract_slow(z_raw, freq, False, epoch, verbose > 1)
 
         if verbose > 0:
-          print("Transposing and concatenating")
+          print("Transposing and concatenating", flush = True)
         # formatting matrix for output
         x_counts_transposed = np.transpose(epoch_counts_x)
         epoch_counts_x = []
