@@ -181,11 +181,16 @@ get_counts_py = function(
   colnames(result) = xyz
   result = as.data.frame(result)
   if (!is.null(timecol)) {
-    stopifnot(length(time) == nrow(result))
-    result = cbind(time, result)
+    stopifnot(
+      length(time) == nrow(result) ||
+                length(time) == (nrow(result) + 1)
+    )
+
+    result = cbind(time[1:nrow(result)], result)
     colnames(result) = c(timecol, xyz)
   }
-  result$AGCOUNT = rms(result$X, result$Y, result$Z)
+  # if (all(c("X", "Y")))
+  # result$AGCOUNT = rms(result$X, result$Y, result$Z)
   result
 }
 
@@ -216,6 +221,7 @@ get_counts = function(
   if (all(tolower(xyz) %in% cn) && !all(xyz %in% cn)) {
     xyz = tolower(xyz)
   }
+  xyz = intersect(colnames(df), xyz)
   df = df[,xyz, drop = FALSE]
   df = as.matrix(df)
   if (save_memory) {
@@ -250,7 +256,7 @@ get_counts = function(
         message("Resampling 10Hz")
       }
       raw = f$`_resample_10hz`(trim_data = raw,
-                               verbose = 0)
+                               verbose = verbose > 1)
       if (verbose > 0) {
         message("Getting counts")
       }
@@ -259,7 +265,7 @@ get_counts = function(
                             verbose = verbose > 1)
       raw = t(raw)
       result = cbind(result, raw)
-      rm(raw_data)
+      rm(raw)
     }
   } else {
     result = extract_counts(raw = df,
@@ -271,13 +277,13 @@ get_counts = function(
   result = as.data.frame(result)
   if (!is.null(timecol)) {
     stopifnot(length(time) == nrow(result) ||
-                length(time) = (nrow(result) -1)
-              )
+                length(time) == (nrow(result) + 1)
+    )
 
     result = cbind(time[1:nrow(result)], result)
     colnames(result) = c(timecol, xyz)
   }
-  result$AGCOUNT = rms(result$X, result$Y, result$Z)
+  # result$AGCOUNT = rms(result$X, result$Y, result$Z)
   result
 }
 
@@ -317,7 +323,7 @@ extract_counts = function(
     message("Resampling 10Hz")
   }
   raw = f$`_resample_10hz`(trim_data = raw,
-                           verbose = 0)
+                           verbose = verbose > 1)
   if (verbose > 0) {
     message("Getting counts")
   }
@@ -327,3 +333,136 @@ extract_counts = function(
   raw = t(raw)
   raw
 }
+
+
+#' @rdname get_counts
+#' @export
+resample_data = function(
+  df,
+  epoch_in_seconds = 1L,
+  sample_rate = NULL,
+  verbose = TRUE
+) {
+  f = get_ag_functions()
+
+  xyz = c("X", "Y", "Z")
+  cn = colnames(df)
+  if (all(tolower(xyz) %in% cn) && !all(xyz %in% cn)) {
+    xyz = tolower(xyz)
+  }
+  xyz = intersect(colnames(df), xyz)
+  df = df[,xyz, drop = FALSE]
+  df = as.matrix(df)
+
+  sample_rate = check_sample_rate(sample_rate, df)
+  epoch_in_seconds = check_epoch(epoch_in_seconds)
+  f$`_resample`(raw = df,
+                frequency = sample_rate,
+                epoch_seconds = epoch_in_seconds,
+                verbose = verbose > 1)
+}
+
+
+#' @rdname get_counts
+#' @export
+filter_data = function(
+  df,
+  verbose = TRUE
+) {
+  f = get_ag_functions()
+
+  df = as.matrix(df)
+  ddf = dim(df)
+  if (ddf[1] > ddf[2]) {
+    warning("Transposing the data to be wide, needed for filtering")
+    df = t(df)
+  }
+  if (verbose > 1) {
+    message(paste("Dim df: ", paste(dim(df), collapse = " ")))
+  }
+  if (verbose > 0) {
+    message("Filtering Data")
+  }
+  f$`_bpf_filter`(downsample_data = df,
+                  verbose = verbose > 1)
+}
+
+#' @rdname get_counts
+#' @export
+trim_data = function(
+  df,
+  verbose = TRUE
+) {
+  f = get_ag_functions()
+
+  df = as.matrix(df)
+  ddf = dim(df)
+  if (ddf[1] > ddf[2]) {
+    warning("Transposing the data to be wide, needed for trimming")
+    df = t(df)
+  }
+  if (verbose > 1) {
+    message(paste("Dim df: ", paste(dim(df), collapse = " ")))
+  }
+  if (verbose > 0) {
+    message("Trimming Data")
+  }
+  f$`_trim_data`(bpf_data = df,
+                 lfe_select = FALSE,
+                 verbose = verbose > 1)
+}
+
+
+#' @rdname get_counts
+#' @export
+resample_10hz = function(
+  df,
+  verbose = TRUE
+) {
+  f = get_ag_functions()
+
+  df = as.matrix(df)
+  ddf = dim(df)
+  if (ddf[1] > ddf[2]) {
+    warning("Transposing the data to be wide, needed for trimming")
+    df = t(df)
+  }
+  if (verbose > 1) {
+    message(paste("Dim df: ", paste(dim(df), collapse = " ")))
+  }
+  if (verbose > 0) {
+    message("Resampling 10Hz")
+  }
+  f$`_resample_10hz`(trim_data = df,
+                     verbose = verbose > 1)
+
+}
+
+
+#' @rdname get_counts
+#' @export
+sum_counts = function(
+  df,
+  epoch_in_seconds = 1L,
+  verbose = TRUE
+) {
+  f = get_ag_functions()
+
+  df = as.matrix(df)
+  ddf = dim(df)
+  if (ddf[1] > ddf[2]) {
+    warning("Transposing the data to be wide, needed for trimming")
+    df = t(df)
+  }
+  if (verbose > 1) {
+    message(paste("Dim df: ", paste(dim(df), collapse = " ")))
+  }
+  if (verbose > 0) {
+    message("Getting counts")
+  }
+  f$`_sum_counts`(downsample_10hz = df,
+                  epoch_seconds = epoch_in_seconds,
+                  verbose = verbose > 1)
+
+}
+

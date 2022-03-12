@@ -5,6 +5,11 @@
 \alias{get_counts_py}
 \alias{get_counts}
 \alias{extract_counts}
+\alias{resample_data}
+\alias{filter_data}
+\alias{trim_data}
+\alias{resample_10hz}
+\alias{sum_counts}
 \title{Get Actigraph Counts}
 \usage{
 download_actgraph_test_data()
@@ -27,6 +32,16 @@ get_counts(
 )
 
 extract_counts(raw, epoch_in_seconds = 1L, sample_rate = NULL, verbose = TRUE)
+
+resample_data(df, epoch_in_seconds = 1L, sample_rate = NULL, verbose = TRUE)
+
+filter_data(df, verbose = TRUE)
+
+trim_data(df, verbose = TRUE)
+
+resample_10hz(df, verbose = TRUE)
+
+sum_counts(df, epoch_in_seconds = 1L, verbose = TRUE)
 }
 \arguments{
 \item{df}{A \code{data.frame} with columns \code{X}, \code{Y}, \code{Z}, and
