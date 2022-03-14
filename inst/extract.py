@@ -550,9 +550,15 @@ def get_counts(raw, freq: int, epoch: int, fast: bool = True, verbose: bool = Fa
 
 
 def get_counts_csv(file, freq: int, epoch: int, fast: bool = True, verbose: bool = False):
+  if verbose:
+    print("Reading in CSV", flush = True)
   raw = read_csv(file, skiprows=0)
   raw = raw[["X", "Y", "Z"]]
+  if verbose:
+    print("Converting to array", flush = True)  
   raw = np.array(raw)
+  if verbose:
+    print("Getting Counts", flush = True)    
   counts = get_counts(raw, freq = freq, epoch = epoch, fast = fast, verbose = verbose)
   del raw
   return counts

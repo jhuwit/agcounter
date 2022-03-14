@@ -24,6 +24,6 @@ add_time_column = function(
   )
   cn = colnames(result)
   result = cbind(time[1:nrow(result)], result)
-  colnames(result) = c(timecol, cn)
+  colnames(result) = c("HEADER_TIME_STAMP", cn)
   result
 }
