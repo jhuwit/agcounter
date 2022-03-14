@@ -43,7 +43,7 @@ testthat::test_that("Checking python output", {
     testthat::expect_equal(out, out_slow)
     out_slow$AGCOUNT = NULL
     out$AGCOUNT = NULL
-    colnames(out) =c("Axis1", "Axis2", "Axis3")
+    colnames(out) = c("Axis1", "Axis2", "Axis3")
     check = readr::read_csv(ag_file, skip = 10)
     check = as.data.frame(check)
     out = as.data.frame(out)

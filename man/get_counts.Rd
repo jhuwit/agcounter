@@ -52,7 +52,7 @@ get_counts(
 
 extract_counts(raw, epoch_in_seconds = 1L, sample_rate = NULL, verbose = TRUE)
 
-resample_data(df, epoch_in_seconds = 1L, sample_rate = NULL, verbose = TRUE)
+resample_data(df, sample_rate = NULL, verbose = TRUE)
 
 filter_data(df, verbose = TRUE)
 
