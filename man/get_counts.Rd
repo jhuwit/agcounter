@@ -3,6 +3,7 @@
 \name{download_actgraph_test_data}
 \alias{download_actgraph_test_data}
 \alias{get_counts_py}
+\alias{get_counts_csv}
 \alias{get_counts}
 \alias{extract_counts}
 \alias{resample_data}
@@ -22,6 +23,8 @@ get_counts_py(
   save_memory = FALSE,
   verbose = TRUE
 )
+
+get_counts_csv(file, sample_rate, epoch_in_seconds = 1L, verbose = TRUE)
 
 get_counts(
   df,

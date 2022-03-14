@@ -23,6 +23,9 @@ get_sample_rate = function(df, sample_rate = NULL) {
   if (!is.null(sample_rate)) {
     return(sample_rate)
   }
+  if (is.null(df)) {
+    return(NULL)
+  }
   if (is.null(sample_rate) || is.na(sample_rate)) {
     sample_rate = attr(df, "sample_rate")
   }
@@ -87,6 +90,9 @@ check_epoch = function(epoch_in_seconds) {
 # -------
 #   counts : ndarray, shape (n_epochs, 3)
 # The counts, n_epochs = ceil(n_samples/freq).
+
+
+
 #' Get Actigraph Counts
 #'
 #' @param df A `data.frame` with columns `X`, `Y`, `Z`, and
@@ -183,7 +189,7 @@ get_counts_py = function(
   if (!is.null(timecol)) {
     stopifnot(
       length(time) == nrow(result) ||
-                length(time) == (nrow(result) + 1)
+        length(time) == (nrow(result) + 1)
     )
 
     result = cbind(time[1:nrow(result)], result)
@@ -194,6 +200,27 @@ get_counts_py = function(
   result
 }
 
+#' @rdname get_counts
+#' @export
+get_counts_csv = function(
+  file,
+  sample_rate,
+  epoch_in_seconds = 1L,
+  verbose = TRUE
+) {
+  f = get_ag_functions()
+  get_counts_csv = f$get_counts_csv
+  rm(f)
+
+  sample_rate = check_sample_rate(sample_rate, df = NULL)
+  epoch_in_seconds = check_epoch(epoch_in_seconds)
+
+  file = normalizePath(path.expand(file), mustWork = TRUE)
+  get_counts_csv(file = file,
+                epoch = epoch_in_seconds,
+                freq = sample_rate,
+                verbose = verbose > 1)
+}
 
 #' @rdname get_counts
 #' @export

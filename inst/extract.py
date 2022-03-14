@@ -4,6 +4,7 @@ from typing import Any
 import numpy as np
 from numpy import typing as npt
 from scipy import signal
+from pandas import read_csv
 
 # BPF. There are extraneous coefficients as to match constants
 # in ActiLife.
@@ -546,3 +547,12 @@ def get_counts(raw, freq: int, epoch: int, fast: bool = True, verbose: bool = Fa
         del z_counts_transposed
 
     return counts.astype(int)
+
+
+def get_counts_csv(file, freq: int, epoch: int, fast: bool = True, verbose: bool = False):
+  raw = read_csv(file, skiprows=0)
+  raw = raw[["X", "Y", "Z"]]
+  raw = np.array(raw)
+  counts = get_counts(raw, freq = freq, epoch = epoch, fast = fast, verbose = verbose)
+  del raw
+  return counts
