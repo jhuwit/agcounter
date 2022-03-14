@@ -52,7 +52,7 @@ is.wholenumber <-
   function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
 
 rms = function(x, y, z) {
-  sqrt(x^2 + y^2 + z^2)
+  sqrt(1/3 * (x^2 + y^2 + z^2))
 }
 
 
