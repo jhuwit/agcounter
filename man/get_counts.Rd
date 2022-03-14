@@ -25,12 +25,19 @@ get_counts_py(
   verbose = TRUE
 )
 
-extract_counts_csv(file, sample_rate, epoch_in_seconds = 1L, verbose = TRUE)
+extract_counts_csv(
+  file,
+  sample_rate,
+  epoch_in_seconds = 1L,
+  fast = TRUE,
+  verbose = TRUE
+)
 
 get_counts_csv(
   file,
-  epoch_in_seconds = 60L,
   sample_rate = NULL,
+  epoch_in_seconds = 60L,
+  fast = TRUE,
   verbose = TRUE,
   ...
 )

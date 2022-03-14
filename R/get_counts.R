@@ -315,7 +315,6 @@ get_counts = function(
       }
       raw = f$`_resample`(raw = raw,
                           frequency = sample_rate,
-                          epoch_seconds = epoch_in_seconds,
                           verbose = verbose > 1)
       gc()
       if (verbose > 0) {
@@ -382,7 +381,6 @@ extract_counts = function(
   }
   raw = f$`_resample`(raw = raw,
                       frequency = sample_rate,
-                      epoch_seconds = epoch_in_seconds,
                       verbose = verbose > 1)
   gc()
   if (verbose > 0) {
@@ -416,7 +414,6 @@ extract_counts = function(
 #' @export
 resample_data = function(
   df,
-  epoch_in_seconds = 1L,
   sample_rate = NULL,
   verbose = TRUE
 ) {
@@ -432,10 +429,8 @@ resample_data = function(
   df = as.matrix(df)
 
   sample_rate = check_sample_rate(sample_rate, df)
-  epoch_in_seconds = check_epoch(epoch_in_seconds)
   f$`_resample`(raw = df,
                 frequency = sample_rate,
-                epoch_seconds = epoch_in_seconds,
                 verbose = verbose > 1)
 }
 

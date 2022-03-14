@@ -1,4 +1,4 @@
-testthat::test_that("multiplication works", {
+testthat::test_that("Checking python output", {
   testthat::skip_if_not_installed("readr")
   module_version = function(module = "numpy") {
     x <- reticulate::import(module)
@@ -21,23 +21,25 @@ testthat::test_that("multiplication works", {
   )
   x = download_actgraph_test_data()
 
-  eg = expand.grid(epoch = c(10, 30), sample_rate = c(30, 40))
+  eg = expand.grid(epoch_in_seconds = c(10, 30), sample_rate = c(30, 40))
   eg$raw_file = file.path(tempdir(), "data", "raw",
-                          paste0("raw_", eg$epoch, "_", eg$sample_rate,
+                          paste0("raw_", eg$epoch_in_seconds, "_", eg$sample_rate,
                                  ".csv"))
   eg$ag_file = file.path(tempdir(), "data", "ActiLifeCounts",
                           paste0("raw_", eg$epoch, "_", eg$sample_rate,
-                                 "_counts", eg$epoch, "sec.csv"))
+                                 "_counts", eg$epoch_in_seconds, "sec.csv"))
   read_raw = function(file) {
     df = readr::read_csv(file, col_names = FALSE)
     colnames(df) = c("Y", "X", "Z")
     df[, c("X", "Y", "Z")]
   }
-  check_it = function(epoch, sample_rate, raw_file, ag_file) {
+  check_it = function(epoch_in_seconds, sample_rate, raw_file, ag_file) {
     df = read_raw(raw_file)
-    out_slow = get_counts(df, sample_rate = sample_rate, epoch = epoch,
+    out_slow = get_counts(df, sample_rate = sample_rate,
+                          epoch_in_seconds = epoch_in_seconds,
                           save_memory = TRUE)
-    out = get_counts(df, sample_rate = sample_rate, epoch = epoch)
+    out = get_counts(df, sample_rate = sample_rate,
+                     epoch_in_seconds = epoch_in_seconds)
     testthat::expect_equal(out, out_slow)
     out_slow$AGCOUNT = NULL
     out$AGCOUNT = NULL
@@ -49,6 +51,6 @@ testthat::test_that("multiplication works", {
   }
   for (ifile in seq(nrow(eg))) {
     ieg = eg[ifile,]
-    check_it(ieg$epoch, ieg$sample_rate, ieg$raw_file, ieg$ag_file)
+    check_it(ieg$epoch_in_seconds, ieg$sample_rate, ieg$raw_file, ieg$ag_file)
   }
 })
