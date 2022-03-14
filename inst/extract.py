@@ -513,7 +513,7 @@ def get_counts(raw, freq: int, epoch: int, fast: bool = True, verbose: bool = Fa
     assert freq in range(30, 101, 10), "freq must be in [30 : 10 : 100]"
 
     if fast:
-        counts = _extract(raw, freq, False, epoch, verbose > 1).transpose()
+        counts = _extract(raw, freq, False, epoch, verbose).transpose()
     else:
         x_raw = raw[0 : len(raw), [0]]
         y_raw = raw[0 : len(raw), [1]]

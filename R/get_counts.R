@@ -207,6 +207,7 @@ extract_counts_csv = function(
   file,
   sample_rate,
   epoch_in_seconds = 1L,
+  fast = TRUE,
   verbose = TRUE
 ) {
   f = get_ag_functions()
@@ -215,9 +216,11 @@ extract_counts_csv = function(
   epoch_in_seconds = check_epoch(epoch_in_seconds)
 
   file = normalizePath(path.expand(file), mustWork = TRUE)
+  fast = as.logical(fast)
   f$get_counts_csv(file = file,
                    epoch = epoch_in_seconds,
                    freq = sample_rate,
+                   fast = fast,
                    verbose = verbose)
 }
 
@@ -226,8 +229,9 @@ extract_counts_csv = function(
 #' @export
 get_counts_csv = function(
   file,
-  epoch_in_seconds=60L,
   sample_rate = NULL,
+  epoch_in_seconds=60L,
+  fast = TRUE,
   verbose = TRUE,
   ...) {
   epoch_in_seconds = check_epoch(epoch_in_seconds)
@@ -253,6 +257,7 @@ get_counts_csv = function(
     file,
     sample_rate = sample_rate,
     epoch_in_seconds = epoch_in_seconds,
+    fast = fast,
     verbose = verbose > 1)
   colnames(result) = xyz
   result = as.data.frame(result)
@@ -262,7 +267,7 @@ get_counts_csv = function(
   result = add_time_column(
     time,
     result = result,
-    epoch_in_seconds = epoch
+    epoch_in_seconds = epoch_in_seconds
   )
   result
 }
