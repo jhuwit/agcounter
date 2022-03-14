@@ -167,7 +167,7 @@ get_counts_py = function(
                                epoch = epoch_in_seconds,
                                freq = sample_rate,
                                fast = fast,
-                               verbose = as.integer(verbose))
+                               verbose = verbose > 1)
       result = cbind(result, raw_data)
       rm(raw_data)
     }
@@ -176,7 +176,7 @@ get_counts_py = function(
                            epoch = epoch_in_seconds,
                            freq = sample_rate,
                            fast = fast,
-                           verbose = as.integer(verbose))
+                           verbose = verbose > 1)
   }
   colnames(result) = xyz
   result = as.data.frame(result)
@@ -245,7 +245,7 @@ get_counts = function(
         message("Filtering Data")
       }
       raw = f$`_bpf_filter`(downsample_data = raw,
-                            verbose = verbose)
+                            verbose = verbose > 1)
       if (verbose > 0) {
         message("Trimming Data")
       }
@@ -271,7 +271,7 @@ get_counts = function(
     result = extract_counts(raw = df,
                             epoch_in_seconds = epoch_in_seconds,
                             sample_rate = sample_rate,
-                            verbose = as.integer(verbose))
+                            verbose = verbose > 1)
   }
   colnames(result) = xyz
   result = as.data.frame(result)
@@ -312,7 +312,7 @@ extract_counts = function(
     message("Filtering Data")
   }
   raw = f$`_bpf_filter`(downsample_data = raw,
-                        verbose = verbose)
+                        verbose = verbose > 1)
   if (verbose > 0) {
     message("Trimming Data")
   }
