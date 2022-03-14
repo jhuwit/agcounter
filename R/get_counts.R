@@ -201,25 +201,70 @@ get_counts_py = function(
 }
 
 #' @rdname get_counts
+#' @param file name of CSV file to run, must have columns `X`, `Y`, `Z`
 #' @export
-get_counts_csv = function(
+extract_counts_csv = function(
   file,
   sample_rate,
   epoch_in_seconds = 1L,
   verbose = TRUE
 ) {
   f = get_ag_functions()
-  get_counts_csv = f$get_counts_csv
-  rm(f)
 
   sample_rate = check_sample_rate(sample_rate, df = NULL)
   epoch_in_seconds = check_epoch(epoch_in_seconds)
 
   file = normalizePath(path.expand(file), mustWork = TRUE)
-  get_counts_csv(file = file,
-                epoch = epoch_in_seconds,
-                freq = sample_rate,
-                verbose = verbose > 1)
+  f$get_counts_csv(file = file,
+                   epoch = epoch_in_seconds,
+                   freq = sample_rate,
+                   verbose = verbose)
+}
+
+#' @rdname get_counts
+#' @param ... additional arguments to pass to [readr::read_csv]
+#' @export
+get_counts_csv = function(
+  file,
+  epoch_in_seconds=60L,
+  sample_rate = NULL,
+  verbose = TRUE,
+  ...) {
+  epoch_in_seconds = check_epoch(epoch_in_seconds)
+
+  # reading in the data - need for time!
+  df = readr::read_csv(file, ...)
+  cn = colnames(df)
+  df$X = df$Y = df$Z = NULL
+
+  sample_rate = check_sample_rate(sample_rate, df = df)
+
+  timecol = get_time_col(df)
+  time = get_time(df)
+  rm(df); gc()
+  time = unique(lubridate::floor_date(
+    time,
+    unit = paste0(epoch_in_seconds, " seconds")))
+  if (verbose) {
+    message("Time Extracted")
+  }
+  xyz = intersect(cn, c("X", "Y", "Z"))
+  result = extract_counts_csv(
+    file,
+    sample_rate = sample_rate,
+    epoch_in_seconds = epoch_in_seconds,
+    verbose = verbose > 1)
+  colnames(result) = xyz
+  result = as.data.frame(result)
+  if (verbose) {
+    message("Counts created")
+  }
+  result = add_time_column(
+    time,
+    result = result,
+    epoch_in_seconds = epoch
+  )
+  result
 }
 
 #' @rdname get_counts

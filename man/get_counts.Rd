@@ -3,6 +3,7 @@
 \name{download_actgraph_test_data}
 \alias{download_actgraph_test_data}
 \alias{get_counts_py}
+\alias{extract_counts_csv}
 \alias{get_counts_csv}
 \alias{get_counts}
 \alias{extract_counts}
@@ -24,7 +25,15 @@ get_counts_py(
   verbose = TRUE
 )
 
-get_counts_csv(file, sample_rate, epoch_in_seconds = 1L, verbose = TRUE)
+extract_counts_csv(file, sample_rate, epoch_in_seconds = 1L, verbose = TRUE)
+
+get_counts_csv(
+  file,
+  epoch_in_seconds = 60L,
+  sample_rate = NULL,
+  verbose = TRUE,
+  ...
+)
 
 get_counts(
   df,
@@ -61,6 +70,10 @@ this as \code{FALSE} if your data is \emph{very} big}
 \item{save_memory}{Should each column be run separately?}
 
 \item{verbose}{print diagnostic messages}
+
+\item{file}{name of CSV file to run, must have columns \code{X}, \code{Y}, \code{Z}}
+
+\item{...}{additional arguments to pass to \link[readr:read_delim]{readr::read_csv}}
 
 \item{raw}{a raw matrix of numeric values}
 }
