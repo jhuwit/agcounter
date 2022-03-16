@@ -234,7 +234,7 @@ get_counts_csv = function(
   fast = TRUE,
   verbose = TRUE,
   ...) {
-  stop_module_version("pandas", "0.23")
+  stopifnot(reticulate::py_module_available("pandas"))
 
   epoch_in_seconds = check_epoch(epoch_in_seconds)
 
