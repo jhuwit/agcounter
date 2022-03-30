@@ -242,15 +242,18 @@ get_counts_csv = function(
   df = readr::read_csv(file, ...)
   cn = colnames(df)
   df$X = df$Y = df$Z = NULL
+  gc()
 
   sample_rate = check_sample_rate(sample_rate, df = df)
 
-  timecol = get_time_col(df)
-  time = get_time(df)
-  rm(df); gc()
-  time = unique(lubridate::floor_date(
-    time,
+  # timecol = get_time_col(df)
+  df = get_time(df)
+  df = unique(lubridate::floor_date(
+    df,
     unit = paste0(epoch_in_seconds, " seconds")))
+  time = df;
+  rm(df)
+  gc()
   if (verbose) {
     message("Time Extracted")
   }
