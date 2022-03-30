@@ -224,6 +224,37 @@ extract_counts_csv = function(
                    verbose = verbose)
 }
 
+
+#' Make Unique Floored  date/time POSIXct
+#'
+#' @param x a vector of date-time objects
+#' @param n number of seconds
+#'
+#' @return A `POSIXct` vector
+#' @export
+#'
+#' @examples
+#' x <- lubridate::ymd_hms("2009-08-03 12:01:29.23")
+#' x = seq(x, x + 2000, by = 1/10)
+#' floor_unique_seconds(x, n = 30)
+#' floor_unique_seconds(x, n = 60)
+#' floor_unique_seconds(x, n = 60*5)
+#' x = as.POSIXlt(x)
+#' floor_unique_seconds(x, n = 60)
+#' floor_unique_seconds(x, n = 60*5)
+floor_unique_seconds = function(x, n = 60L) {
+  if (!is.wholenumber(n)) {
+    stop("n is not a whole number!")
+  }
+  stopifnot(lubridate::is.POSIXct(x) ||
+            lubridate::is.POSIXlt(x))
+  tzone = lubridate::tz(x)
+  x = as.numeric(x)
+  x = (x%/%n) * n
+  x = unique(x)
+  as.POSIXct(x, tz = tzone, origin = lubridate::origin)
+}
+
 #' @rdname get_counts
 #' @param ... additional arguments to pass to [readr::read_csv]
 #' @export
@@ -248,9 +279,7 @@ get_counts_csv = function(
 
   # timecol = get_time_col(df)
   df = get_time(df)
-  df = unique(lubridate::floor_date(
-    df,
-    unit = paste0(epoch_in_seconds, " seconds")))
+  df = floor_unique_seconds(df, n = epoch_in_seconds)
   time = df;
   rm(df)
   gc()
