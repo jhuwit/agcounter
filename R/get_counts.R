@@ -247,7 +247,7 @@ floor_unique_seconds = function(x, n = 60L) {
     stop("n is not a whole number!")
   }
   stopifnot(lubridate::is.POSIXct(x) ||
-            lubridate::is.POSIXlt(x))
+              lubridate::is.POSIXlt(x))
   tzone = lubridate::tz(x)
   x = as.numeric(x)
   x = (x%/%n) * n
@@ -305,6 +305,48 @@ get_counts_csv = function(
   )
   result
 }
+
+#' @rdname get_counts
+#' @param ... additional arguments to pass to [readr::read_csv]
+#' @param time_column Column which has time in there.  If `NULL`, then
+#' will be guessed from the data.  If no time column exists, use
+#' [get_counts_csv]
+#' @export
+convert_counts_csv = function(
+  file,
+  outfile,
+  sample_rate = NULL,
+  epoch_in_seconds=60L,
+  fast = TRUE,
+  verbose = TRUE,
+  time_column = NULL,
+  ...) {
+  stopifnot(reticulate::py_module_available("pandas"))
+
+  epoch_in_seconds = check_epoch(epoch_in_seconds)
+
+  # reading in the data - need for time!
+  if (is.null(time_column)) {
+    df = readr::read_csv(file, n_max = 2, ...)
+    time_column = get_time_col(df)
+    rm(df)
+  }
+  sample_rate = check_sample_rate(sample_rate, df = df)
+  outfile = normalizePath(path.expand(outfile), mustWork = FALSE)
+  file = normalizePath(path.expand(file), mustWork = TRUE)
+
+  f = get_ag_functions()
+  result = f$convert_counts_csv(file = file,
+                                outfile = outfile,
+                                epoch = epoch_in_seconds,
+                                freq = sample_rate,
+                                fast = fast,
+                                verbose = verbose,
+                                time_column = time_column)
+  stopifnot(file.exists(outfile))
+  result
+}
+
 
 #' @rdname get_counts
 #' @export

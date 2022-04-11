@@ -5,6 +5,7 @@
 \alias{get_counts_py}
 \alias{extract_counts_csv}
 \alias{get_counts_csv}
+\alias{convert_counts_csv}
 \alias{get_counts}
 \alias{extract_counts}
 \alias{resample_data}
@@ -39,6 +40,17 @@ get_counts_csv(
   epoch_in_seconds = 60L,
   fast = TRUE,
   verbose = TRUE,
+  ...
+)
+
+convert_counts_csv(
+  file,
+  outfile,
+  sample_rate = NULL,
+  epoch_in_seconds = 60L,
+  fast = TRUE,
+  verbose = TRUE,
+  time_column = NULL,
   ...
 )
 
@@ -81,6 +93,10 @@ this as \code{FALSE} if your data is \emph{very} big}
 \item{file}{name of CSV file to run, must have columns \code{X}, \code{Y}, \code{Z}}
 
 \item{...}{additional arguments to pass to \link[readr:read_delim]{readr::read_csv}}
+
+\item{time_column}{Column which has time in there.  If \code{NULL}, then
+will be guessed from the data.  If no time column exists, use
+\link{get_counts_csv}}
 
 \item{raw}{a raw matrix of numeric values}
 }
