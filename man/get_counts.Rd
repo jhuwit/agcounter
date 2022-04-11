@@ -94,6 +94,8 @@ this as \code{FALSE} if your data is \emph{very} big}
 
 \item{...}{additional arguments to pass to \link[readr:read_delim]{readr::read_csv}}
 
+\item{outfile}{output filename for csv}
+
 \item{time_column}{Column which has time in there.  If \code{NULL}, then
 will be guessed from the data.  If no time column exists, use
 \link{get_counts_csv}}
@@ -101,7 +103,7 @@ will be guessed from the data.  If no time column exists, use
 \item{raw}{a raw matrix of numeric values}
 }
 \value{
-A \code{data.frame} of each axis count and the RMS of them
+A \code{data.frame} of each axis count and the vector magntitude of them
 in the \code{AGCOUNT} column with a time column
 }
 \description{

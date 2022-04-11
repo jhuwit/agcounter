@@ -51,8 +51,11 @@ get_sample_rate = function(df, sample_rate = NULL) {
 is.wholenumber <-
   function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
 
-rms = function(x, y, z) {
-  sqrt(1/3 * (x^2 + y^2 + z^2))
+# rms = function(x, y, z) {
+#   sqrt(1/3 * (x^2 + y^2 + z^2))
+# }
+vm = function(x, y, z) {
+  sqrt((x^2 + y^2 + z^2))
 }
 
 
@@ -105,7 +108,7 @@ check_epoch = function(epoch_in_seconds) {
 #' @param verbose print diagnostic messages
 #' @param save_memory Should each column be run separately?
 #'
-#' @return A `data.frame` of each axis count and the RMS of them
+#' @return A `data.frame` of each axis count and the vector magntitude of them
 #' in the `AGCOUNT` column with a time column
 #' @export
 #'
@@ -196,7 +199,7 @@ get_counts_py = function(
     colnames(result) = c(timecol, xyz)
   }
   # if (all(c("X", "Y")))
-  # result$AGCOUNT = rms(result$X, result$Y, result$Z)
+  # result$AGCOUNT = vm(result$X, result$Y, result$Z)
   result
 }
 
@@ -311,6 +314,7 @@ get_counts_csv = function(
 #' @param time_column Column which has time in there.  If `NULL`, then
 #' will be guessed from the data.  If no time column exists, use
 #' [get_counts_csv]
+#' @param outfile output filename for csv
 #' @export
 convert_counts_csv = function(
   file,
@@ -435,7 +439,7 @@ get_counts = function(
     result = cbind(time[1:nrow(result)], result)
     colnames(result) = c(timecol, xyz)
   }
-  # result$AGCOUNT = rms(result$X, result$Y, result$Z)
+  # result$AGCOUNT = vm(result$X, result$Y, result$Z)
   result
 }
 
