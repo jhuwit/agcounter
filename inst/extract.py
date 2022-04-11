@@ -577,5 +577,5 @@ def get_counts_csv(file, freq: int, epoch: int, fast: bool = True, verbose: bool
 
 def convert_counts_csv(file, outfile, freq: int, epoch: int, fast: bool = True, verbose: bool = False, time_column: str = None):
   counts = get_counts_csv(file, freq = 80, epoch = 60, verbose = True, time_column = time_column)
-  counts.to_csv(outfile)
+  counts.to_csv(outfile,index=False)
   return counts
