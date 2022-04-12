@@ -325,7 +325,7 @@ def _resample(
         print("_resample: Created downsample_data", flush = True)
     downsample_data = np.round(downsample_data * 1000) / 1000
     if verbose:
-        print("_resample: returning downsampled data"", flush = True)
+        print("_resample: returning downsampled data", flush = True)
     return downsample_data
 
 
