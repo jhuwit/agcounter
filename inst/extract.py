@@ -271,7 +271,7 @@ def _resample(
     upsample_data[:, ::upsample_factor] = raw
 
     if verbose:
-        print("Created upsample data", flush = True)
+        print("_resample: Created upsample data", flush = True)
 
     pi = np.pi  # 3.1415926535897932385
     a_fp = pi / (pi + 2 * upsample_factor)
@@ -290,17 +290,19 @@ def _resample(
     # causes the "tail" on the epochs.
     if frequency == 30 or frequency == 60 or frequency == 90:
         lpf_upsample_data = upsample_data
+        del upsample_data
+        gc.collect()
     else:
         lpf_upsample_data = np.zeros((m, int(n * upsample_factor + 1)))
         lpf_upsample_data[:, 1:] = (a_fp * up_factor_fp) * (
             upsample_data + np.roll(upsample_data, 1)
         )
+        del upsample_data
+        gc.collect()
         for i in range(1, len(lpf_upsample_data[0])):
             lpf_upsample_data[:, i] += -b_fp * lpf_upsample_data[:, i - 1]
-    del upsample_data
-    gc.collect()
     if verbose:
-        print("Created lpf upsample data", flush = True)
+        print("_resample: Created lpf upsample data", flush = True)
 
     if frequency not in [30, 60, 90]:
         lpf_upsample_data = lpf_upsample_data[:, 1:]
@@ -318,7 +320,7 @@ def _resample(
     gc.collect()
     
     if verbose:
-        print("Created downsample_data", flush = True)
+        print("_resample: Created downsample_data", flush = True)
     downsample_data = np.round(downsample_data * 1000) / 1000
     return downsample_data
 
@@ -344,7 +346,7 @@ def _bpf_filter(
         (1, -1)
     )
     if verbose:
-        print("Filtering Data", flush = True)
+        print("_bpf_filter: Filtering Data", flush = True)
     bpf_data, _ = signal.lfilter(
         INPUT_COEFFICIENTS[0, :],
         OUTPUT_COEFFICIENTS[0, :],
@@ -493,15 +495,23 @@ def _extract(
     epochs :
         The epochs
     """
+    if verbose:
+      print("_resampling data", flush=True)  
     downsample_data = _resample(raw=raw, frequency=frequency, verbose=verbose)
     del raw
     gc.collect()
+    if verbose:
+      print("_bpf_filtering data", flush=True)  
     bpf_data = _bpf_filter(downsample_data=downsample_data, verbose=verbose)
     del downsample_data
     gc.collect()
+    if verbose:
+      print("_trim_data-ing data", flush=True)     
     trim_data = _trim_data(bpf_data=bpf_data, lfe_select=lfe_select, verbose=verbose)
     del bpf_data
     gc.collect()
+    if verbose:
+      print("_resample_10hz-ing data", flush=True)      
     downsample_10hz = _resample_10hz(trim_data=trim_data, verbose=verbose)
     del trim_data
     gc.collect()
