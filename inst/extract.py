@@ -270,6 +270,9 @@ def _resample(
     upsample_data = np.zeros((m, upsample_factor * n), dtype=raw.dtype)
     upsample_data[:, ::upsample_factor] = raw
 
+    if verbose:
+        print("Created upsample data", flush = True)
+
     pi = np.pi  # 3.1415926535897932385
     a_fp = pi / (pi + 2 * upsample_factor)
     b_fp = (pi - 2 * upsample_factor) / (pi + 2 * upsample_factor)
@@ -296,6 +299,8 @@ def _resample(
             lpf_upsample_data[:, i] += -b_fp * lpf_upsample_data[:, i - 1]
     del upsample_data
     gc.collect()
+    if verbose:
+        print("Created lpf upsample data", flush = True)
 
     if frequency not in [30, 60, 90]:
         lpf_upsample_data = lpf_upsample_data[:, 1:]
