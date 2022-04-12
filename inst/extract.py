@@ -5,6 +5,7 @@ import numpy as np
 from numpy import typing as npt
 from scipy import signal
 import pandas as pd
+import gc
 
 # BPF. There are extraneous coefficients as to match constants
 # in ActiLife.
@@ -145,8 +146,10 @@ def _extract_slow(
         for i in range(len(down_sample_data[0])):
             down_sample_data[0, i] = lpf_upsample_data[0, i * downsample_factor]
     del raw
+    gc.collect()
     del lpf_upsample_data
-
+    gc.collect()
+    
     down_sample_data = np.round(down_sample_data * 1000) / 1000
 
     bpf_data = np.zeros((1, len(down_sample_data[0])))
@@ -174,6 +177,7 @@ def _extract_slow(
         shift_reg_out[[0], 1:9] = shift_reg_out[[0], 0 : (9 - 1)]
         shift_reg_out[0, 0] = zeros_comp - poles_comp
     del down_sample_data
+    gc.collect()
 
 
     bpf_data = (
@@ -213,6 +217,7 @@ def _extract_slow(
     if verbose:
         print("Getting data back to 10Hz for accumulation", flush = True)
     del bpf_data
+    gc.collect()
     # hackish downsample to 10 Hz
     down_sample10_hz = np.zeros((1, int(len(trim_data[0]) / 3)))
 
@@ -221,6 +226,7 @@ def _extract_slow(
             np.nanmean(trim_data[0, ((y - 1) * 3) : ((y - 1) * 3 + 3)])
         )  # floor
     del trim_data
+    gc.collect()
 
     # Accumulator for epoch
     block_size = epoch * 10
@@ -233,6 +239,7 @@ def _extract_slow(
             sum(down_sample10_hz[0, i * block_size : i * block_size + block_size])
         )
     del down_sample10_hz
+    gc.collect()
     return epoch_counts
 
 
@@ -271,6 +278,7 @@ def _resample(
     # raw doesn't need to be used after this
     if frequency != 30:
         del raw
+    gc.collect()
 
     # Allocate memory and then LPF.  LPF is only done at non
     # integer multiples of 30 Hz. This LPF is garbage and does a
@@ -287,6 +295,7 @@ def _resample(
         for i in range(1, len(lpf_upsample_data[0])):
             lpf_upsample_data[:, i] += -b_fp * lpf_upsample_data[:, i - 1]
     del upsample_data
+    gc.collect()
 
     if frequency not in [30, 60, 90]:
         lpf_upsample_data = lpf_upsample_data[:, 1:]
@@ -298,8 +307,11 @@ def _resample(
         del raw
     else:
         downsample_data = lpf_upsample_data[:, ::downsample_factor]
+    gc.collect()
 
     del lpf_upsample_data
+    gc.collect()
+    
     if verbose:
         print("Created downsample_data", flush = True)
     downsample_data = np.round(downsample_data * 1000) / 1000
@@ -337,6 +349,7 @@ def _bpf_filter(
     )
 
     del downsample_data
+    gc.collect()
 
     bpf_data = ((3.0 / 4096.0) / (2.6 / 256.0) * 237.5) * bpf_data
     # 17.127404 is used in ActiLife and 17.128125 is used in
@@ -477,12 +490,16 @@ def _extract(
     """
     downsample_data = _resample(raw=raw, frequency=frequency, verbose=verbose)
     del raw
+    gc.collect()
     bpf_data = _bpf_filter(downsample_data=downsample_data, verbose=verbose)
     del downsample_data
+    gc.collect()
     trim_data = _trim_data(bpf_data=bpf_data, lfe_select=lfe_select, verbose=verbose)
     del bpf_data
+    gc.collect()
     downsample_10hz = _resample_10hz(trim_data=trim_data, verbose=verbose)
     del trim_data
+    gc.collect()
 
     epoch_counts = _sum_counts(
         downsample_10hz=downsample_10hz, epoch_seconds=epoch_seconds, verbose=verbose
@@ -538,13 +555,15 @@ def get_counts(raw, freq: int, epoch: int, fast: bool = True, verbose: bool = Fa
         del epoch_counts_y
         z_counts_transposed = np.transpose(epoch_counts_z)
         del epoch_counts_z
-
+        gc.collect()
+        
         counts = np.concatenate(
             (x_counts_transposed, y_counts_transposed, z_counts_transposed), 1
         )
         del x_counts_transposed
         del y_counts_transposed
         del z_counts_transposed
+        gc.collect()
 
     return counts.astype(int)
 
@@ -568,6 +587,7 @@ def get_counts_csv(file, freq: int, epoch: int, fast: bool = True, verbose: bool
     print("Getting Counts", flush = True)    
   counts = get_counts(raw, freq = freq, epoch = epoch, fast = fast, verbose = verbose)
   del raw
+  gc.collect()
   counts = pd.DataFrame(counts, columns = ['X','Y','Z'])
   counts["AC"] = (counts["X"]^2 + counts["Y"]^2 + counts["Z"]^2) ** 0.5
   ts = ts[0:counts.shape[0]]
