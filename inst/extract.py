@@ -293,6 +293,8 @@ def _resample(
         del upsample_data
         gc.collect()
     else:
+        if verbose:
+            print("_resample: creating lpf data", flush = True)      
         lpf_upsample_data = np.zeros((m, int(n * upsample_factor + 1)))
         lpf_upsample_data[:, 1:] = (a_fp * up_factor_fp) * (
             upsample_data + np.roll(upsample_data, 1)
@@ -322,6 +324,8 @@ def _resample(
     if verbose:
         print("_resample: Created downsample_data", flush = True)
     downsample_data = np.round(downsample_data * 1000) / 1000
+    if verbose:
+        print("_resample: returning downsampled data"", flush = True)
     return downsample_data
 
 
@@ -342,17 +346,22 @@ def _bpf_filter(
     bpf_data :
         The filtered data
     """
+    if verbose:
+        print("_bpf_filter: Creating filter", flush = True)    
     zi = signal.lfilter_zi(INPUT_COEFFICIENTS[0, :], OUTPUT_COEFFICIENTS[0, :]).reshape(
         (1, -1)
     )
+    if verbose:
+        print("_bpf_filter: Repeating filter", flush = True)    
+    zi = zi.repeat(downsample_data.shape[0], axis=0) * downsample_data[:, 0].reshape((-1, 1))
+    
     if verbose:
         print("_bpf_filter: Filtering Data", flush = True)
     bpf_data, _ = signal.lfilter(
         INPUT_COEFFICIENTS[0, :],
         OUTPUT_COEFFICIENTS[0, :],
         downsample_data,
-        zi=zi.repeat(downsample_data.shape[0], axis=0)
-        * downsample_data[:, 0].reshape((-1, 1)),
+        zi=zi,
     )
 
     del downsample_data
