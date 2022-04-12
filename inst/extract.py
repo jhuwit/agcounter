@@ -588,6 +588,7 @@ def get_counts_csv(file, freq: int, epoch: int, fast: bool = True, verbose: bool
   if verbose:
     print("Converting to array", flush = True)  
   raw = np.array(raw)
+  gc.collect()
   if verbose:
     print("Getting Counts", flush = True)    
   counts = get_counts(raw, freq = freq, epoch = epoch, fast = fast, verbose = verbose)
