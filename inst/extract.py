@@ -347,7 +347,9 @@ def _bpf_filter(
     """
     if verbose:
         print("_bpf_filter: Creating filter", flush = True)    
-    zi = signal.lfilter_zi(INPUT_COEFFICIENTS[0, :], OUTPUT_COEFFICIENTS[0, :]).reshape(
+    a = INPUT_COEFFICIENTS[0, :]
+    b = OUTPUT_COEFFICIENTS[0, :]
+    zi = signal.lfilter_zi(a, b).reshape(
         (1, -1)
     )
     if verbose:
