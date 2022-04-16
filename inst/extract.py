@@ -349,9 +349,8 @@ def _bpf_filter(
         print("_bpf_filter: Creating filter", flush = True)    
     a = INPUT_COEFFICIENTS[0, :]
     b = OUTPUT_COEFFICIENTS[0, :]
-    zi = signal.lfilter_zi(a, b).reshape(
-        (1, -1)
-    )
+    zi = signal.lfilter_zi(a, b)
+    zi = zi.reshape((1, -1))
     if verbose:
         print("_bpf_filter: Repeating filter", flush = True)    
     zi = zi.repeat(downsample_data.shape[0], axis=0) * downsample_data[:, 0].reshape((-1, 1))
@@ -359,8 +358,8 @@ def _bpf_filter(
     if verbose:
         print("_bpf_filter: Filtering Data", flush = True)
     bpf_data, _ = signal.lfilter(
-        INPUT_COEFFICIENTS[0, :],
-        OUTPUT_COEFFICIENTS[0, :],
+        a, 
+        b,
         downsample_data,
         zi=zi,
     )
