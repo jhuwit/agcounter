@@ -2,7 +2,7 @@
 % Please edit documentation in R/install_modules.R
 \name{install_agcounts_modules}
 \alias{install_agcounts_modules}
-\title{Install Python Modules for \code{agcounts}}
+\title{Install Python Modules needed for \code{agcounts} Python to run}
 \usage{
 install_agcounts_modules(...)
 }
@@ -13,7 +13,7 @@ install_agcounts_modules(...)
 An invisible \code{NULL}
 }
 \description{
-Install Python Modules for \code{agcounts}
+Install Python Modules needed for \code{agcounts} Python to run
 }
 \examples{
 install_agcounts_modules()

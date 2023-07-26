@@ -1,4 +1,4 @@
 library(testthat)
-library(agcounts)
+library(agcounter)
 
-test_check("agcounts")
+test_check("agcounter")

@@ -24,7 +24,7 @@ get_ag_functions = function() {
   stop_module_version("numpy", "1.20.0")
   stop_module_version("scipy", "1.1.0")
 
-  file = system.file("extract.py", package = "agcounts")
+  file = system.file("extract.py", package = "agcounter")
   # file = "inst/extract.py"
   functions = reticulate::py_run_file(file)
 }

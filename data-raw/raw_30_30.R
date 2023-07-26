@@ -1,5 +1,5 @@
 ## code to prepare `raw_30_30` dataset goes here
-library(agcounts)
+library(agcounter)
 x = download_actgraph_test_data()
 epoch = 10
 sample_rate = 30

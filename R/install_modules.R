@@ -1,4 +1,4 @@
-#' Install Python Modules for `agcounts`
+#' Install Python Modules needed for `agcounts` Python to run
 #'
 #' @param ... additional arguments to pass to [reticulate::py_install]
 #'
