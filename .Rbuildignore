@@ -5,3 +5,4 @@
 ^\.github$
 ^requirements\.txt$
 ^data-raw$
+^agcounter\.Rproj$
