@@ -614,9 +614,9 @@ def get_counts_csv(file, freq: int, epoch: int, fast: bool = True, verbose: bool
   del raw
   gc.collect()
   counts = pd.DataFrame(counts, columns = ['X','Y','Z'])
-  counts["AC"] = (counts["X"]^2 + counts["Y"]^2 + counts["Z"]^2) ** 0.5
-  ts = ts[0:counts.shape[0]]
+  counts["AC"] = ((counts["X"]* 1.0) ** 2.0 + (counts["Y"]*1.0)  ** 2.0 + (counts["Z"] * 1.0) **2.0) ** 0.5
   if time_column is not None:
+    ts = ts[0:counts.shape[0]]
     counts = pd.concat([ts, counts], axis=1)
   return counts
 

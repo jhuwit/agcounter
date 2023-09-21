@@ -128,10 +128,21 @@ check_epoch = function(epoch_in_seconds) {
 #'    # title_epoch_frequency
 #'    out_mem = get_counts(df, sample_rate = sample_rate,
 #'    save_memory = TRUE, epoch = epoch, verbose = 2)
+#'
 #'    out = get_counts(df, sample_rate = sample_rate, epoch = epoch, verbose = 2)
 #'    out$AGCOUNT = NULL
 #'    check = readr::read_csv(testfile, skip = 10)
 #'    stopifnot(all(check == out))
+#'    stopifnot(all(check == out_mem))
+#'
+#'    out_extract = extract_counts(as.matrix(df), sample_rate = sample_rate,
+#'    epoch = epoch)
+#'    stopifnot(all(check == out_extract))
+#'    tfile = tempfile(fileext = ".csv.gz")
+#'    readr::write_csv(df, tfile)
+#'    out_extract_csv = extract_counts_csv(tfile, sample_rate = sample_rate,
+#'    epoch = epoch)
+#'    stopifnot(all(check == out_extract_csv[, c("X", "Y", "Z")]))
 #' }
 #' @rdname get_counts
 get_counts_py = function(
