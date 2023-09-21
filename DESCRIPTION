@@ -1,6 +1,6 @@
 Package: agcounter
 Title: Processes 'Accelerometry' Data to 'Actigraph' Activity Counts ('AC')
-Version: 0.1.0.9000
+Version: 0.2.0.9000
 Authors@R: 
     person("John", "Muschelli", , "muschellij2@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-6469-1750"))
