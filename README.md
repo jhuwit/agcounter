@@ -6,6 +6,7 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/StreamlineDataScience/agcounts/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/StreamlineDataScience/agcounts/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/muschellij2/agcounter/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/muschellij2/agcounter/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of agcounts is to …
