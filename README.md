@@ -1,22 +1,22 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# agcounts
+# agcounter
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/StreamlineDataScience/agcounts/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/StreamlineDataScience/agcounts/actions/workflows/R-CMD-check.yaml)
-[![R-CMD-check](https://github.com/muschellij2/agcounter/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/muschellij2/agcounter/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/jhuwit/agcounter/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jhuwit/agcounter/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-The goal of agcounts is to …
+The goal of `agcounter` is to implement the Activity Counts method from
+<https://github.com/actigraph/agcounts>.
 
 ## Installation
 
-You can install the development version of agcounts like so:
+You can install the development version of agcounter like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+remotes::install_github("https://github.com/jhuwit/agcounter")
 ```
 
 ## Example
@@ -24,7 +24,7 @@ You can install the development version of agcounts like so:
 This is a basic example which shows you how to solve a common problem:
 
 ``` r
-library(agcounts)
+library(agcounter)
 
 raw_files = c("raw_10_30.csv", "raw_10_40.csv", 
               "raw_30_30.csv", "raw_30_40.csv")
